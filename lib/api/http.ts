@@ -3,8 +3,10 @@ import type { AppSettings, Story, UserProfile } from "@/lib/types";
 const TOKEN_KEY = "vesper.token.v1";
 const DEVICE_KEY = "vesper.device.v1";
 
+const DEFAULT_API_URL = "https://chatbot-backend-brown-psi.vercel.app";
+
 export function apiBaseUrl() {
-  return (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
+  return (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL).replace(/\/$/, "");
 }
 
 export function apiEnabled() {
@@ -49,11 +51,16 @@ export async function ensureSession(): Promise<SessionPayload> {
     window.localStorage.removeItem(TOKEN_KEY);
   }
 
-  const response = await fetch(`${apiBaseUrl()}/user/guest`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ deviceId: deviceId() }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl()}/user/guest`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ deviceId: deviceId() }),
+    });
+  } catch {
+    throw new Error("Could not reach the story API.");
+  }
   if (!response.ok) {
     throw new Error(await readError(response));
   }
@@ -68,15 +75,20 @@ export async function apiRequest<T>(
 ) {
   const session = await ensureSession();
   const { body, headers, ...rest } = init;
-  const response = await fetch(`${apiBaseUrl()}${path}`, {
-    ...rest,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session.token}`,
-      ...(headers || {}),
-    },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl()}${path}`, {
+      ...rest,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.token}`,
+        ...(headers || {}),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    throw new Error("Could not reach the story API.");
+  }
   if (!response.ok) {
     throw new Error(await readError(response));
   }
