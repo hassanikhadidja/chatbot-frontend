@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/vesper-banner.png" alt="Vesper: the New Discussion screen in dark mode, the tagline, and the Settings screen in light mode" width="100%">
+  <img src="vesper-banner.png.png" alt="Vesper: the New Discussion screen in dark mode, the tagline, and the Settings screen in light mode" width="100%">
 </p>
 
 <h1 align="center">Vesper</h1>
